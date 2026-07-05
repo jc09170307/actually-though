@@ -394,13 +394,13 @@ function toast(msg){var t=document.getElementById('toast');t.textContent=msg;t.c
 function renderTopics(){
   var cats=Object.keys(TOPICS);
   document.getElementById('cat-row').innerHTML=cats.map(function(c){
-    return '<button class="cat-chip'+(c===selectedCat?' active':'')+'" onclick="selectCat(\''+c.replace(/'/g,"\\'")+'\'">'+c+'</button>';
+    return '<button class="cat-chip'+(c===selectedCat?' active':'')+'" data-cat="'+c+'" onclick="selectCat(this.dataset.cat)">'+c+'</button>';
   }).join('');
   renderTopicGrid();
 }
 function selectCat(cat){
   selectedCat=cat;
-  document.querySelectorAll('.cat-chip').forEach(function(b){b.classList.toggle('active',b.textContent===cat)});
+  document.querySelectorAll('.cat-chip').forEach(function(b){b.classList.toggle('active',b.dataset.cat===cat)});
   renderTopicGrid();
 }
 function renderTopicGrid(){
