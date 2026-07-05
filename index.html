@@ -333,6 +333,21 @@ body{padding-bottom:4rem}
 
 <script>
 
+
+// ═══ JSON EXTRACTOR ═══
+function extractJSON(text){
+  try{ JSON.parse(text); return text; }catch(e){}
+  text = text.replace(/^```json\s*/,'').replace(/^```\s*/,'').replace(/\s*```$/,'').trim();
+  try{ JSON.parse(text); return text; }catch(e){}
+  var start = text.indexOf('{');
+  var end = text.lastIndexOf('}');
+  if(start > -1 && end > start) return text.slice(start, end+1);
+  start = text.indexOf('[');
+  end = text.lastIndexOf(']');
+  if(start > -1 && end > start) return text.slice(start, end+1);
+  return text;
+}
+
 // ═══ API KEY ═══
 function getApiKey(){
   return localStorage.getItem('jon-api-key')||'';
@@ -483,8 +498,8 @@ async function startDebate(source){
   try{
     var resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':getApiKey(),'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1000,system:sys,messages:[{role:'user',content:'Proposition: "'+prop+'"\n\nReturn ONLY JSON with keys "for" and "against". No markdown.'}]})});
     var data=await resp.json();
-    var text=data.content[0].text.trim().replace(/```json|```/g,'').trim();
-    var result=JSON.parse(text);
+    var text=data.content[0].text.trim();
+    var result=JSON.parse(extractJSON(text));
     proText=result.for||'';conText=result.against||'';
     document.getElementById('pro-content').textContent=proText;
     document.getElementById('pro-content').className='side-content';
@@ -648,8 +663,8 @@ async function startDeepDive(){
   try{
     var resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':getApiKey(),'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1000,system:'You are a scholarly intellectual guide providing rigorous, nuanced analysis for a DAcHM student and renaissance thinker.',messages:[{role:'user',content:prompt}]})});
     var data=await resp.json();
-    var text=data.content[0].text.trim().replace(/```json|```/g,'').trim();
-    var result=JSON.parse(text);
+    var text=data.content[0].text.trim();
+    var result=JSON.parse(extractJSON(text));
     var sections=[
       {key:'coreQuestion',label:'The Core Question'},
       {key:'historicalContext',label:'Historical & Classical Context'},
