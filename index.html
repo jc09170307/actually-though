@@ -332,6 +332,19 @@ body{padding-bottom:4rem}
 <div class="toast" id="toast"></div>
 
 <script>
+
+// ═══ API KEY ═══
+function getApiKey(){
+  return localStorage.getItem('jon-api-key')||'';
+}
+function checkApiKey(){
+  if(!getApiKey()){
+    toast('⚠️ No API key — set it in The Dantian → ⚙️ Settings');
+    return false;
+  }
+  return true;
+}
+
 // ═══════════════════════════════════════
 // DATA
 // ═══════════════════════════════════════
@@ -425,9 +438,10 @@ function surpriseMe(){
   toast('Topic randomized — let\'s go');
 }
 async function generateTopics(){
+  if(!checkApiKey()) return;
   var sp=document.getElementById('gen-spinner');sp.style.display='inline-block';
   try{
-    var resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:600,messages:[{role:'user',content:'Generate 6 fresh debate propositions in category "'+selectedCat+'". Clear debatable statements, not questions. Return ONLY a JSON array of 6 strings. No markdown.'}]})});
+    var resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':getApiKey(),'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:600,messages:[{role:'user',content:'Generate 6 fresh debate propositions in category "'+selectedCat+'". Clear debatable statements, not questions. Return ONLY a JSON array of 6 strings. No markdown.'}]})});
     var data=await resp.json();
     var text=data.content[0].text.trim().replace(/```json|```/g,'').trim();
     TOPICS[selectedCat]=(TOPICS[selectedCat]||[]).concat(JSON.parse(text));
@@ -448,6 +462,7 @@ function steelmanMode(){
 }
 
 async function startDebate(source){
+  if(!checkApiKey()) return;
   var prop=source==='custom'?document.getElementById('custom-prop').value.trim():currentProp;
   if(!prop){toast('Enter or select a proposition first');return;}
   currentProp=prop;
@@ -466,7 +481,7 @@ async function startDebate(source){
   var sys='You are a rigorous intellectual debate engine. Argue both sides with equal force, intellectual honesty, and depth. Draw on philosophy, TCM theory, clinical ethics, science, and lived wisdom. Each argument: 3-4 distinct points, flowing prose not bullets.'+(isSteelman?'\n\nSteelman Mode: make the AGAINST argument especially rigorous and hard to dismiss.':'');
 
   try{
-    var resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1000,system:sys,messages:[{role:'user',content:'Proposition: "'+prop+'"\n\nReturn ONLY JSON with keys "for" and "against". No markdown.'}]})});
+    var resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':getApiKey(),'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1000,system:sys,messages:[{role:'user',content:'Proposition: "'+prop+'"\n\nReturn ONLY JSON with keys "for" and "against". No markdown.'}]})});
     var data=await resp.json();
     var text=data.content[0].text.trim().replace(/```json|```/g,'').trim();
     var result=JSON.parse(text);
@@ -622,6 +637,7 @@ function diveCurrentTopic(){
 }
 
 async function startDeepDive(){
+  if(!checkApiKey()) return;
   var topic=document.getElementById('dive-topic').value.trim();
   if(!topic){toast('Enter a topic first');return;}
   var sp=document.getElementById('dive-spinner');sp.style.display='inline-block';
@@ -630,7 +646,7 @@ async function startDeepDive(){
   var prompt='Write a comprehensive deep dive on: "'+topic+'"\n\nStructure with these sections:\n1. The Core Question\n2. Historical & Classical Context\n3. The Strongest Case FOR\n4. The Strongest Case AGAINST\n5. TCM / Classical Chinese Medicine Perspective\n6. Key Thinkers & Sources\n7. Unresolved Tensions\n8. Where to Go Deeper\n\nReturn ONLY a JSON object with keys: coreQuestion, historicalContext, caseFor, caseAgainst, tcmPerspective, keyThinkers, unresolvedTensions, goDeeper. Each value is a string paragraph. No markdown, no preamble.';
 
   try{
-    var resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1000,system:'You are a scholarly intellectual guide providing rigorous, nuanced analysis for a DAcHM student and renaissance thinker.',messages:[{role:'user',content:prompt}]})});
+    var resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':getApiKey(),'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1000,system:'You are a scholarly intellectual guide providing rigorous, nuanced analysis for a DAcHM student and renaissance thinker.',messages:[{role:'user',content:prompt}]})});
     var data=await resp.json();
     var text=data.content[0].text.trim().replace(/```json|```/g,'').trim();
     var result=JSON.parse(text);
